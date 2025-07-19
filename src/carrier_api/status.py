@@ -54,6 +54,85 @@ class StatusZone:
         return str(self.__repr__())
 
 
+
+class StatusODU:
+    """Represents the status of the Outdoor Unit (ODU)."""
+
+    def __init__(self, raw: dict):
+        self.raw = raw  # Set self.raw to the passed ODU data
+
+        # Assign values from the JSON
+        self.type = safely_get_json_value(self.raw, "type", str)
+        self.operational_status = safely_get_json_value(self.raw, "opstat", str)
+        self.idu_cfm = safely_get_json_value(self.raw, "iducfm", int)
+        self.odu_coil_temp = safely_get_json_value(self.raw, "oducoiltmp", float)
+        self.blower_rpm = safely_get_json_value(self.raw, "blwrpm", int)
+        self.line_voltage = safely_get_json_value(self.raw, "linevolt", int)
+        self.compressor_rpm = safely_get_json_value(self.raw, "comprpm", int)
+        self.suction_pressure = safely_get_json_value(self.raw, "suctpress", int)
+        self.suction_temp = safely_get_json_value(self.raw, "sucttemp", float)
+        self.suction_superheat = safely_get_json_value(self.raw, "suctsupheat", float)
+        self.discharge_temp = safely_get_json_value(self.raw, "dischargetmp", float)
+        self.exv_position = safely_get_json_value(self.raw, "exvpos", int)
+        self.ac_line_current = safely_get_json_value(self.raw, "aclinecurrent", float)
+        self.dc_bus_voltage = safely_get_json_value(self.raw, "dcbusvoltage", float)
+        self.discharge_pressure = safely_get_json_value(self.raw, "dischargepressure", float)
+        self.discharge_superheat = safely_get_json_value(self.raw, "dischargesuperheat", float)
+        self.ipm_temperature = safely_get_json_value(self.raw, "ipmtemperature", float)
+        self.pfcm_temperature = safely_get_json_value(self.raw, "pfcmtemperature", float)
+        self.outdoor_fan_rpm = safely_get_json_value(self.raw, "outdoorfanrpm", int)
+
+    def __repr__(self):
+        return {
+            "type": self.type,
+            "operational_status": self.operational_status,
+            "idu_cfm": self.idu_cfm,
+            "odu_coil_temp": self.odu_coil_temp,
+            "blower_rpm": self.blower_rpm,
+            "line_voltage": self.line_voltage,
+            "compressor_rpm": self.compressor_rpm,
+            "suction_pressure": self.suction_pressure,
+            "suction_temp": self.suction_temp,
+            "suction_superheat": self.suction_superheat,
+            "discharge_temp": self.discharge_temp,
+            "exv_position": self.exv_position,
+            "ac_line_current": self.ac_line_current,
+            "dc_bus_voltage": self.dc_bus_voltage,
+            "discharge_pressure": self.discharge_pressure,
+            "discharge_superheat": self.discharge_superheat,
+            "ipm_temperature": self.ipm_temperature,
+            "pfcm_temperature": self.pfcm_temperature,
+            "outdoor_fan_rpm": self.outdoor_fan_rpm,
+        }
+
+    def __str__(self):
+        return str(self.__repr__())
+
+class StatusIDU:
+    """Represents the status of the Indoor Unit (IDU)."""
+
+    def __init__(self, raw: dict):
+        self.raw = raw  # Set self.raw to the passed IDU data
+
+        # Assign values from the JSON
+        self.type = safely_get_json_value(self.raw, "type", str)
+        self.operational_status = safely_get_json_value(self.raw, "opstat", str)
+        self.airflow_cfm = safely_get_json_value(self.raw, "cfm", int)
+        self.static_pressure = safely_get_json_value(self.raw, "statpress", float)
+        self.blower_rpm = safely_get_json_value(self.raw, "blwrpm", int)
+
+    def __repr__(self):
+        return {
+            "type": self.type,
+            "operational_status": self.operational_status,
+            "airflow_cfm": self.airflow_cfm,
+            "static_pressure": self.static_pressure,
+            "blower_rpm": self.blower_rpm,
+        }
+
+    def __str__(self):
+        return str(self.__repr__())
+
 class Status:
     outdoor_temperature: int | None = None
     mode: str | None = None
@@ -96,6 +175,9 @@ class Status:
             if safely_get_json_value(zone_json, "enabled") == "on":
                 self.zones.append(StatusZone(zone_json))
 
+        self.odu = StatusODU(self.raw.get("odu", {}))
+        self.idu = StatusIDU(self.raw.get("idu", {}))
+
     @property
     def mode_const(self) -> SystemModes:
         match self.mode:
@@ -120,6 +202,8 @@ class Status:
             "outdoor_unit_operational_status": self.outdoor_unit_operational_status,
             "indoor_unit_operational_status": self.indoor_unit_operational_status,
             "zones": [zone.__repr__() for zone in self.zones],
+            "odu": self.odu.__repr__(),  
+            "idu": self.idu.__repr__(),  
         }
 
     def __str__(self):

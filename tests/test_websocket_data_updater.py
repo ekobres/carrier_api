@@ -20,9 +20,12 @@ from src.carrier_api import Profile, Status, Config, Energy, System, WebsocketDa
 
 
 class WebsocketDataUpdaterTestBase(IsolatedAsyncioTestCase):
+    websocket_message_path = ''  # Default value to avoid attribute errors
+
     def setUp(self):
-        self.system_response = json.loads(open(resources.files().joinpath('graphql/systems.json')).read())
-        energy_response = json.loads(open(resources.files().joinpath('graphql/energy.json')).read())
+        graphql_path = Path(__file__).parent / 'graphql'
+        self.system_response = json.loads(open(graphql_path / 'systems.json').read())
+        energy_response = json.loads(open(graphql_path / 'energy.json').read())
         systems = []
         for system_response in self.system_response["infinitySystems"]:
             profile = Profile(raw=system_response["profile"])
@@ -31,7 +34,7 @@ class WebsocketDataUpdaterTestBase(IsolatedAsyncioTestCase):
             energy = Energy(raw=energy_response["infinityEnergy"])
             systems.append(System(profile=profile, status=status, config=config, energy=energy))
         self.data_updater = WebsocketDataUpdater(systems)
-        self.websocket_message_str = open(resources.files().joinpath(self.websocket_message_path)).read()
+        self.websocket_message_str = open(Path(__file__).parent / self.__class__.websocket_message_path).read()
         self.carrier_system = systems[0]
 
 class MessageStatusIduCfm(WebsocketDataUpdaterTestBase):
